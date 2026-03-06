@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EFL Dergi — Dergi Editörü</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&amp;family=DM+Sans:wght@300;400;500;600&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1A7B7B;--teal-lt:#2EA89A;--teal-pale:#E6F4F3;
+  --burgundy:#7B1F2E;--burg-lt:#C94058;
+  --cream:#F7F3EC;--cream-dk:#EDE5D5;
+  --charcoal:#1E1E1E;--mid:#4A4A4A;--white:#FFFFFF;--gold:#C8A84B;
+}
+body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;align-items:center;padding:0 20px 80px;gap:0;min-height:100vh}
+
+/* ═══ TOOLBAR ═══ */
+.toolbar{position:sticky;top:0;z-index:200;width:100%;max-width:1240px;background:var(--charcoal);display:flex;align-items:center;gap:10px;padding:10px 18px;box-shadow:0 4px 24px rgba(0,0,0,.4);flex-wrap:wrap}
+.tb-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--gold);margin-right:auto;white-space:nowrap}
+.tb-hint{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px}
+.tb-btn{background:none;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);border-radius:3px;padding:5px 13px;font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .18s;white-space:nowrap}
+.tb-btn:hover{background:var(--teal);border-color:var(--teal);color:#fff}
+.tb-btn.accent{background:var(--teal-lt);border-color:var(--teal-lt);color:#fff}
+
+/* ═══ PROPERTY PANEL ═══ */
+#propPanel{position:fixed;right:0;top:60px;width:220px;background:var(--charcoal);box-shadow:-4px 0 20px rgba(0,0,0,.4);z-index:300;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column;overflow:hidden;max-height:calc(100vh - 60px)}
+#propPanel.open{transform:translateX(0)}
+.pp-header{background:rgba(255,255,255,.06);padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.pp-title{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--gold)}
+.pp-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.pp-close:hover{color:#fff}
+.pp-body{padding:14px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.pp-section{display:flex;flex-direction:column;gap:6px}
+.pp-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.pp-row{display:flex;gap:6px;flex-wrap:wrap}
+.swatch{width:26px;height:26px;border-radius:3px;cursor:pointer;border:2px solid transparent;transition:border .15s;flex-shrink:0}
+.swatch:hover,.swatch.active{border-color:#fff}
+.pp-slider{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.15);outline:none}
+.pp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--teal-lt);cursor:pointer}
+.pp-input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:3px;color:#fff;font-size:10px;padding:5px 8px;outline:none;font-family:'DM Sans',sans-serif}
+.pp-input:focus{border-color:var(--teal-lt)}
+.pp-btn{width:100%;padding:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);border-radius:3px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.pp-btn:hover{background:var(--burg-lt);border-color:var(--burg-lt);color:#fff}
+.pp-btn.pp-ok{background:var(--teal-lt);border-color:var(--teal-lt);color:#fff}
+.pp-btn.pp-ok:hover{background:var(--teal)}
+
+/* ═══ SPREAD ═══ */
+.spread-wrap{margin-top:20px;display:flex;flex-direction:column;align-items:center}
+.spread{width:1200px;max-width:100%;background:var(--white);display:grid;grid-template-columns:1fr 1fr;box-shadow:0 20px 80px rgba(0,0,0,.25);position:relative}
+.spread::after{content:'';position:absolute;top:0;bottom:0;left:50%;width:2px;background:linear-gradient(to bottom,transparent,rgba(0,0,0,.08) 20%,rgba(0,0,0,.12) 50%,rgba(0,0,0,.08) 80%,transparent);pointer-events:none;z-index:10}
+.spread-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#888;text-align:center;margin-top:8px}
+.page{padding:28px;display:flex;flex-direction:column;gap:12px}
+.page-left{background:var(--white)}
+.page-right{background:var(--cream)}
+
+/* ═══ RUNNING HEAD ═══ */
+.running-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:2px solid var(--charcoal)}
+.section-tag{font-weight:600;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);background:var(--teal-pale);padding:4px 10px;border-radius:2px}
+.page-num{font-family:'Playfair Display',serif;font-size:11px;color:var(--mid);letter-spacing:2px}
+.issue-info{font-size:9px;color:#999;letter-spacing:1.5px;text-transform:uppercase}
+.mag-wordmark{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--charcoal)}
+.mag-wordmark span{color:var(--teal-lt)}
+
+/* ═══ CARD ═══ */
+.card{border-radius:4px;overflow:visible;display:flex;flex-direction:column;position:relative;transition:outline .1s}
+.card.outlined{border:1.5px solid #e0dbd0}
+.card.selected{outline:2.5px solid var(--teal-lt);outline-offset:2px}
+.card:not(.no-select):hover{outline:1.5px dashed var(--teal-lt);outline-offset:2px;cursor:pointer}
+.card.selected:hover{outline:2.5px solid var(--teal-lt)}
+
+.bg-teal    {background:var(--teal)}
+.bg-burg    {background:var(--burgundy)}
+.bg-cream   {background:var(--cream-dk)}
+.bg-charcoal{background:var(--charcoal)}
+.bg-gold    {background:#F5E8C4}
+.bg-white   {background:var(--white)}
+.bg-pale    {background:var(--teal-pale)}
+
+.card-body{padding:11px 13px 13px;flex:1;display:flex;flex-direction:column;gap:5px}
+.card-body.sm{padding:9px 11px}
+
+/* ═══ IMAGE ZONE ═══ */
+.img-zone{width:100%;display:block;position:relative;overflow:hidden;background-size:cover;background-position:center;cursor:pointer;transition:filter .18s;flex-shrink:0}
+.img-zone:hover{filter:brightness(.85)}
+.iz-default{background-image:linear-gradient(135deg,#c9d6df,#8fa8b4)}
+.iz-teal   {background-image:linear-gradient(135deg,var(--teal-pale),#9dd0ca)}
+.iz-burg   {background-image:linear-gradient(135deg,#f0ccd2,#d9899a)}
+.iz-warm   {background-image:linear-gradient(135deg,var(--cream-dk),#d4c5a9)}
+.iz-dark   {background-image:linear-gradient(135deg,#3a3a3a,#1e1e1e)}
+.iz-gold   {background-image:linear-gradient(135deg,#f0e4c0,#d4b870)}
+.iz-mid    {background-image:linear-gradient(135deg,#b0c4c4,#8fb0b0)}
+
+/* upload hint overlay */
+.iz-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0;transition:opacity .18s;background:rgba(0,0,0,.32);pointer-events:none;z-index:2}
+.img-zone:hover .iz-hint{opacity:1}
+.iz-hint svg{width:22px;height:22px}
+.iz-hint span{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#fff;font-weight:600}
+
+/* resize handle */
+.img-resize-handle{position:absolute;bottom:0;left:0;right:0;height:8px;cursor:ns-resize;z-index:5;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.img-zone:hover .img-resize-handle,.img-resize-handle:hover{opacity:1}
+.img-resize-handle::before{content:'';width:30px;height:3px;background:rgba(255,255,255,.7);border-radius:2px}
+
+/* ═══ EDITABLE TEXT ═══ */
+[contenteditable]{outline:none;border-radius:2px;transition:box-shadow .15s}
+[contenteditable]:focus{box-shadow:0 0 0 2px var(--teal-lt);background:rgba(46,168,154,.07)!important}
+[contenteditable]:empty::before{content:attr(data-ph);opacity:.3;pointer-events:none}
+[contenteditable]:not(:focus):hover{box-shadow:0 0 0 1.5px rgba(46,168,154,.5);cursor:text}
+
+/* ═══ EDITABLE ELEMENTS ═══ */
+.e-tag{display:inline-block;font-size:8px;letter-spacing:2.5px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-bottom:3px;min-width:24px}
+.e-tag.teal {background:var(--teal-lt);color:#fff}
+.e-tag.gold {background:var(--gold);color:#fff}
+.e-tag.burg {background:var(--burg-lt);color:#fff}
+.e-tag.white{background:rgba(255,255,255,.25);color:rgba(255,255,255,.9)}
+.e-tag.dark {background:rgba(30,30,30,.14);color:var(--mid)}
+
+.e-title{font-family:'Playfair Display',serif;font-weight:700;line-height:1.2;display:block}
+.e-title.lg{font-size:15px}.e-title.md{font-size:13px}.e-title.sm{font-size:11px}
+.e-title.white{color:#fff}.e-title.dark{color:var(--charcoal)}
+
+.e-body{font-size:10px;line-height:1.65;display:block}
+.e-body.white{color:rgba(255,255,255,.72)}.e-body.dark{color:var(--mid)}
+
+.e-name{font-size:9px;font-weight:600;letter-spacing:.5px}
+.e-name.white{color:rgba(255,255,255,.7)}.e-name.dark{color:var(--mid)}
+
+.e-divider{height:1px;background:rgba(30,30,30,.12);margin:4px 0}
+.e-divider.white{background:rgba(255,255,255,.18)}
+
+.author-row{display:flex;align-items:center;gap:6px;margin-top:auto;padding-top:4px}
+.author-av{width:22px;height:22px;border-radius:50%;overflow:hidden;flex-shrink:0;cursor:pointer}
+.author-av .img-zone{height:22px;width:22px;border-radius:50%}
+
+/* ═══ SPECIAL BLOCKS ═══ */
+.headline-block{background:var(--charcoal);color:var(--white);padding:20px 22px 16px;position:relative;overflow:hidden}
+.headline-block::before{content:'';position:absolute;top:0;left:0;width:6px;height:100%;background:var(--teal-lt)}
+.eyebrow{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:7px;font-weight:600}
+.headline-block h1{font-family:'Playfair Display',serif;font-size:30px;line-height:1.1;font-weight:900;color:#fff}
+.headline-block h1 em{color:var(--teal-lt);font-style:italic}
+.hl-sub{font-size:10px;color:#aaa;margin-top:7px;line-height:1.6;max-width:82%}
+
+.pullquote-bar{background:var(--teal);padding:14px 16px 14px 40px;border-radius:4px;position:relative}
+.pullquote-bar::before{content:'"';font-family:'Playfair Display',serif;font-size:60px;color:rgba(255,255,255,.15);position:absolute;top:2px;left:6px;line-height:1}
+
+.quote-mark{font-family:'Playfair Display',serif;font-size:40px;line-height:.8;color:rgba(255,255,255,.22);margin-bottom:-2px}
+.quote-mark.dark{color:rgba(30,30,30,.1)}
+
+.featured-banner{background:var(--burgundy);padding:22px 24px;position:relative;overflow:hidden;border-radius:4px}
+.featured-banner::before{content:'';position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.04)}
+.banner-btns{display:flex;gap:8px;margin-top:10px}
+.banner-btn{border-radius:2px;padding:6px 14px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;min-width:36px}
+.banner-btn.ghost{background:rgba(255,255,255,.15);color:rgba(255,255,255,.85)}
+.banner-btn.solid{background:var(--gold);color:var(--charcoal)}
+
+.label-strip{background:var(--burgundy);color:#fff;padding:7px 14px;display:flex;align-items:center;justify-content:space-between}
+.ls-tag{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.ls-num{font-family:'Playfair Display',serif;font-size:13px;color:var(--gold)}
+
+.h-card{display:flex;border-radius:4px;overflow:hidden}
+.h-card .h-img{flex:0 0 100px}
+.h-card .h-body{flex:1;padding:11px 13px;display:flex;flex-direction:column;gap:5px}
+
+.stat-box{text-align:center;padding:14px 10px;border-radius:4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1}
+.stat-num.teal{color:var(--teal-lt)}.stat-num.burg{color:var(--burg-lt)}.stat-num.gold{color:var(--gold)}
+
+.footer-strip{background:var(--charcoal);display:flex;overflow:hidden;border-radius:4px}
+.footer-strip>*{flex:1}
+.fs-block{padding:11px 13px;border-right:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:4px}
+.fs-block:last-child{border-right:none}
+
+.badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:'Bebas Neue',sans-serif;font-size:13px;margin-bottom:3px;flex-shrink:0}
+.badge.teal{background:var(--teal-lt);color:#fff}.badge.burg{background:var(--burg-lt);color:#fff}.badge.gold{background:var(--gold);color:#fff}
+
+.row{display:flex;gap:12px}
+.row.thirds>*{flex:1}.row.halves>*{flex:1}
+
+/* ═══ CAPTION ═══ */
+.caption-strip{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);padding:28px 13px 11px}
+.cap-cat{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:600}
+
+/* ═══ PRINT ═══ */
+@media print{
+  body{background:none;padding:0}
+  .toolbar,#propPanel,.img-resize-handle,.iz-hint{display:none!important}
+  .spread{box-shadow:none;page-break-after:always}
+  .card{outline:none!important}
+  [contenteditable]:empty::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- hidden file input -->
+<input type="file" id="imgPicker" accept="image/*" style="display:none">
+
+<!-- ═══════════ TOOLBAR ═══════════ -->
+<div class="toolbar">
+  <div class="tb-logo">EFL DERGİ · EDİTÖR</div>
+  <span class="tb-hint">🖱 Karta tıkla → sağda özellik paneli açılır &nbsp;|&nbsp; ✏️ Metne çift tıkla → düzenle &nbsp;|&nbsp; 🖼 Görsele tıkla → fotoğraf yükle</span>
+  <button class="tb-btn" onclick="window.print()">🖨 PDF Kaydet</button>
+  <button class="tb-btn accent" id="saveBtn">💾 HTML İndir</button>
+</div>
+
+<!-- ═══════════ PROPERTY PANEL ═══════════ -->
+<div id="propPanel" class="">
+  <div class="pp-header">
+    <span class="pp-title" id="ppTitle">KART ÖZELLİKLERİ</span>
+    <button class="pp-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="pp-body">
+
+    <!-- Card BG color -->
+    <div class="pp-section" id="ppBgSection">
+      <div class="pp-label">Kart Arka Planı</div>
+      <div class="pp-row" id="ppBgSwatches">
+        <div class="swatch" style="background:#1E1E1E" data-bg="bg-charcoal" title="Karbon"></div>
+        <div class="swatch active" style="background:#1A7B7B" data-bg="bg-teal" title="Teal"></div>
+        <div class="swatch" style="background:#7B1F2E" data-bg="bg-burg" title="Bordo"></div>
+        <div class="swatch" style="background:#F5E8C4" data-bg="bg-gold" title="Altın"></div>
+        <div class="swatch" style="background:#EDE5D5" data-bg="bg-cream" title="Krem"></div>
+        <div class="swatch" style="background:#E6F4F3" data-bg="bg-pale" title="Açık Teal"></div>
+        <div class="swatch" style="background:#FFFFFF;border:1px solid #ddd" data-bg="bg-white" title="Beyaz"></div>
+        <div class="swatch" style="background:linear-gradient(135deg,#667eea,#764ba2)" data-bg="bg-custom" data-color="#667eea" title="Özel"></div>
+      </div>
+      <input type="color" class="pp-input" id="ppCustomColor" value="#667eea" style="height:32px;padding:2px 4px;cursor:pointer">
+      <div class="pp-label" style="margin-top:2px">Özel Renk</div>
+    </div>
+
+    <!-- Image zone color -->
+    <div class="pp-section" id="ppImgSection" style="">
+      <div class="pp-label">Görsel Placeholder Rengi</div>
+      <div class="pp-row" id="ppImgSwatches">
+        <div class="swatch iz-default active" data-iz="iz-default" title="Mavi-Gri"></div>
+        <div class="swatch iz-teal" data-iz="iz-teal" title="Teal"></div>
+        <div class="swatch iz-burg" data-iz="iz-burg" title="Bordo"></div>
+        <div class="swatch iz-warm" data-iz="iz-warm" title="Sıcak Krem"></div>
+        <div class="swatch iz-dark" data-iz="iz-dark" title="Koyu"></div>
+        <div class="swatch iz-gold" data-iz="iz-gold" title="Altın"></div>
+        <div class="swatch iz-mid" data-iz="iz-mid" title="Gri-Teal"></div>
+      </div>
+      <div class="pp-label" style="margin-top:6px">Görsel Yüksekliği</div>
+      <input type="range" class="pp-slider" id="ppImgHeight" min="60" max="320" value="120">
+      <div style="font-size:9px;color:rgba(255,255,255,.4);text-align:right" id="ppImgHeightVal">160px</div>
+      <button class="pp-btn pp-ok" id="ppUploadBtn">📷 Fotoğraf Yükle</button>
+    </div>
+
+    <!-- Text block color -->
+    <div class="pp-section" id="ppTextSection" style="">
+      <div class="pp-label">Yazı Rengi</div>
+      <div class="pp-row">
+        <div class="swatch" style="background:#fff" data-txtcls="white" title="Beyaz"></div>
+        <div class="swatch" style="background:#1E1E1E" data-txtcls="dark" title="Koyu"></div>
+        <div class="swatch" style="background:#C8A84B" data-txtcls="gold" title="Altın"></div>
+        <div class="swatch" style="background:#2EA89A" data-txtcls="teal" title="Teal"></div>
+      </div>
+      <div class="pp-label" style="margin-top:4px">Yazı Boyutu</div>
+      <input type="range" class="pp-slider" id="ppFontSize" min="8" max="32" value="13">
+      <div style="font-size:9px;color:rgba(255,255,255,.4);text-align:right" id="ppFontSizeVal">13px</div>
+    </div>
+
+    <!-- Tag -->
+    <div class="pp-section" id="ppTagSection" style="">
+      <div class="pp-label">Etiket Rengi</div>
+      <div class="pp-row">
+        <div class="swatch" style="background:var(--teal-lt)" data-tagcls="teal" title="Teal"></div>
+        <div class="swatch" style="background:var(--gold)" data-tagcls="gold" title="Altın"></div>
+        <div class="swatch" style="background:var(--burg-lt)" data-tagcls="burg" title="Bordo"></div>
+        <div class="swatch" style="background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.5)" data-tagcls="white" title="Beyaz"></div>
+        <div class="swatch" style="background:rgba(30,30,30,.15);border:1px solid #ccc" data-tagcls="dark" title="Koyu"></div>
+      </div>
+    </div>
+
+    <!-- Card actions -->
+    <div class="pp-section" id="ppActions">
+      <div class="pp-label">İşlemler</div>
+      <button class="pp-btn" id="ppDupeBtn">⎘ Kartı Çoğalt</button>
+      <button class="pp-btn" id="ppDelBtn" style="margin-top:4px">✕ Kartı Sil</button>
+    </div>
+
+    <button class="pp-btn pp-ok" style="margin-top:4px" onclick="closePanel()">✓ Tamam</button>
+  </div>
+</div>
+
+<!-- ═══════════ SPREAD 1 ═══════════ -->
+
+<div class="spread-wrap" style="margin-top:20px">
+<div class="spread">
+
+  <!-- LEFT 1 -->
+  <div class="page page-left">
+    <div class="running-head no-select">
+      <span class="section-tag e-tag teal" contenteditable="true">Etkinlikler &amp; Haberler</span>
+      <div class="mag-wordmark">EFL <span>DERGİ</span></div>
+      <span class="page-num" contenteditable="true">· Tarih</span>
+    </div>
+
+    <!-- Big headline block -->
+    <div class="headline-block card no-select">
+      <div class="eyebrow" contenteditable="true">Kapak Hikâyesi</div>
+      <h1 contenteditable="true">Biriniz<br>Buraya<br><em>Başlık koysun</em></h1>
+      <p class="hl-sub" contenteditable="true">Bu dönem öğrencilerimizin çıkardığı projeler, etkinlikler ve topluluk destekleri — hepsini burada bulabilirsiniz.</p>
+    </div>
+
+    <!-- 2 big cards side by side -->
+    <div class="row halves" style="gap:12px">
+      <div class="card bg-teal" data-card="" style="">
+        <div class="img-zone iz-default" style="height:160px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf Yükle</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body">
+          <span class="e-tag white" contenteditable="true">Proje</span>
+          <div class="e-title lg white" contenteditable="true" data-ph="Başlık...">Başlık Alanı</div>
+          <div class="e-body white" contenteditable="true" data-ph="Açıklama...">Haber veya proje açıklaması buraya yazılır. Biraz daha uzun metin için alan var.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:8px">
+            <div class="author-av"><div class="img-zone iz-warm" style="height:26px;width:26px;border-radius:50%" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-burg" data-card="">
+        <div class="img-zone iz-burg" style="height:160px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf Yükle</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body">
+          <span class="e-tag white" contenteditable="true">Etkinlik</span>
+          <div class="e-title lg white" contenteditable="true" data-ph="Başlık...">Başlık Alanı</div>
+          <div class="e-body white" contenteditable="true" data-ph="Açıklama...">Haber veya etkinlik açıklaması buraya yazılır. Biraz daha uzun metin için alan var.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:8px">
+            <div class="author-av"><div class="img-zone iz-burg" style="height:26px;width:26px;border-radius:50%" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wide horizontal card -->
+    <div class="h-card outlined card" style="min-height:110px" data-card="">
+      <div class="h-img" style="flex:0 0 140px">
+        <div class="img-zone iz-dark" style="min-height:110px;height:100%" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+        </div>
+      </div>
+      <div class="h-body bg-white" style="padding:16px 18px">
+        <span class="e-tag gold" contenteditable="true">Öne Çıkan</span>
+        <div class="e-title lg dark" style="font-size:14px;margin-top:5px" contenteditable="true" data-ph="Ana başlık...">Başlık</div>
+        <div class="e-divider" style="margin:8px 0"></div>
+        <div class="e-body dark" contenteditable="true" data-ph="Haber metni...">Buraya da yazarız birşeyler. Bu alan biraz daha uzun içerik için tasarlandı.</div>
+        <div class="author-row" style="margin-top:10px">
+          <div class="author-av"><div class="img-zone iz-warm" style="height:26px;width:26px;border-radius:50%" onclick="pickImg(this)"></div></div>
+          <span class="e-name dark" contenteditable="true">Ad Soyad</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pullquote -->
+    <div class="pullquote-bar card no-select" data-card="">
+      <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">Aşağıdaki etkinlikler ile alakalı birşeyler olabilir</div>
+      <div class="author-row" style="margin-top:10px">
+        <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div>
+        <span class="e-name white" contenteditable="true">Ad Soyad, Ünvan</span>
+      </div>
+    </div>
+
+  </div><!-- /page-left 1 -->
+
+  <!-- RIGHT 1 -->
+  <div class="page page-right">
+    <div class="running-head no-select">
+      <span class="section-tag" contenteditable="true">Topluluk &amp; Projeler</span>
+      <span class="issue-info" contenteditable="true">SAYI Tarih koncak</span>
+      <span class="page-num" contenteditable="true"></span>
+    </div>
+
+    <!-- Tall featured card -->
+    <div class="card bg-charcoal" data-card="" style="flex:1">
+      <div class="img-zone iz-dark" style="height:260px" onclick="pickImg(this)">
+        <div class="caption-strip"><div class="cap-cat" contenteditable="true">Proje Haberleri</div></div>
+        <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Ana Fotoğraf Yükle</span></div>
+        <div class="img-resize-handle" data-resize=""></div>
+      </div>
+      <div class="card-body" style="padding:16px 18px;gap:8px">
+        <span class="e-tag white" contenteditable="true">Proje Haberleri</span>
+        <div class="e-title lg white" style="font-size:17px" contenteditable="true">Proje Başlığı Buraya</div>
+        <div class="e-divider white"></div>
+        <div class="e-body white" style="font-size:11px;line-height:1.7" contenteditable="true">Proje açıklaması ve detaylar eklenicek. Bu alan önemli projeyi tanıtmak için daha fazla alan sunuyor.</div>
+        <div class="author-row" style="margin-top:auto;padding-top:6px">
+          <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.15)" onclick="pickImg(this)"></div></div>
+          <span class="e-name white" contenteditable="true">Ad Soyad</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 cards side by side -->
+    <div class="row halves" style="gap:12px">
+      <div class="card bg-burg" data-card="">
+        <div class="img-zone iz-burg" style="height:130px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body">
+          <span class="e-tag white" contenteditable="true">Başarı</span>
+          <div class="e-title md white" contenteditable="true" data-ph="Başlık...">Başlık Alanı</div>
+          <div class="e-body white" contenteditable="true" data-ph="Açıklama...">Kısa haber veya proje açıklaması buraya gelecek.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:6px">
+            <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.15)" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-pale outlined" data-card="">
+        <div class="img-zone iz-teal" style="height:130px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body">
+          <span class="e-tag teal" contenteditable="true">Duyuru</span>
+          <div class="e-title md dark" contenteditable="true" data-ph="Başlık...">Duyuru Başlığı</div>
+          <div class="e-body dark" contenteditable="true" data-ph="Açıklama...">Kısa duyuru metni buraya.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:6px">
+            <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(30,30,30,.1)" onclick="pickImg(this)"></div></div>
+            <span class="e-name dark" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-right 1 -->
+
+</div>
+<p class="spread-label">Çift Sayfa Yayılımı — 1/4 &nbsp;·&nbsp; Etkinlikler &amp; Projeler</p>
+</div>
+
+<!-- ═══════════ SPREAD 2 ═══════════ -->
+<div class="spread-wrap">
+<div class="spread">
+
+  <!-- LEFT 2 -->
+  <div class="page page-left">
+    <div class="running-head no-select">
+      <span class="section-tag" contenteditable="true">Öğrenci Haberleri</span>
+      <div class="mag-wordmark">EFL <span>DERGİ</span></div>
+      <span class="page-num" contenteditable="true">· Tarih</span>
+    </div>
+
+    <!-- Featured banner — taller -->
+    <div class="featured-banner card" data-card="">
+      <span class="e-tag gold" contenteditable="true">Öne Çıkan</span>
+      <div class="e-title lg white" style="font-size:22px;margin-top:6px;line-height:1.2" contenteditable="true">Bu Dönemin En Büyük Olayı</div>
+      <div class="e-body white" style="margin-top:8px;font-size:11px;line-height:1.7;max-width:90%" contenteditable="true">Kısa bir özet çıkaralım. Bu alanda etkinlik veya proje hakkında biraz daha uzun bir giriş yazısı yer alabilir.</div>
+      <div class="banner-btns" style="margin-top:14px">
+        <div class="banner-btn ghost" contenteditable="true">Ad, Soyad</div>
+        <div class="banner-btn solid" contenteditable="true">Tarih</div>
+      </div>
+    </div>
+
+    <!-- Big photo card -->
+    <div class="card outlined" data-card="" style="flex:1">
+      <div class="img-zone iz-mid" style="height:220px" onclick="pickImg(this)">
+        <div class="iz-hint"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Etkinlik / Grup Fotoğrafı</span></div>
+        <div class="img-resize-handle" data-resize=""></div>
+      </div>
+      <div class="label-strip">
+        <span class="ls-tag" contenteditable="true">Etkinlik Fotoğrafı</span>
+        <span class="ls-num" contenteditable="true">2025</span>
+      </div>
+      <div class="card-body" style="padding:14px 16px;gap:6px">
+        <span class="e-tag dark" contenteditable="true">Galeri</span>
+        <div class="e-title md dark" contenteditable="true">Etkinlik Fotoğrafı Açıklaması</div>
+        <div class="e-body dark" style="font-size:11px;line-height:1.7" contenteditable="true">Fotoğraf hakkında kısa açıklama buraya gelecek. Kimin çektiği, nerede çekildiği gibi bilgiler eklenebilir.</div>
+      </div>
+    </div>
+
+    <!-- 3 stat boxes -->
+    <div class="row thirds" style="gap:10px">
+      <div class="stat-box bg-pale outlined card" style="border:1.5px solid #d0e8e6;padding:16px 10px" data-card="">
+        <div class="stat-num teal" style="font-size:40px" contenteditable="true">SAYI</div>
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:600" contenteditable="true">Proje</div>
+        <div class="e-body dark" style="font-size:9px;text-align:center;margin-top:4px" contenteditable="true">Bu sene yapılan proje sayısı yazılcak</div>
+      </div>
+      <div class="stat-box bg-charcoal card" style="padding:16px 10px" data-card="">
+        <div class="stat-num burg" style="font-size:40px" contenteditable="true">138</div>
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.7);font-weight:600" contenteditable="true">Öğrenci</div>
+        <div class="e-body white" style="font-size:9px;text-align:center;margin-top:4px" contenteditable="true">Aktif katılımcı</div>
+      </div>
+      <div class="stat-box bg-gold card" style="padding:16px 10px" data-card="">
+        <div class="stat-num gold" style="font-size:40px" contenteditable="true">SAYI</div>
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--charcoal);font-weight:600" contenteditable="true">Ödül</div>
+        <div class="e-body dark" style="font-size:9px;text-align:center;margin-top:4px" contenteditable="true">Bu ayki başarılar</div>
+      </div>
+    </div>
+
+  </div><!-- /page-left 2 -->
+
+  <!-- RIGHT 2 -->
+  <div class="page page-right">
+    <div class="running-head no-select">
+      <span class="section-tag" contenteditable="true">Röportajlar</span>
+      <span class="issue-info" contenteditable="true">SAYI Tarih</span>
+      <span class="page-num" contenteditable="true"></span>
+    </div>
+
+    <!-- 2 big quote cards -->
+    <div class="row halves" style="gap:12px">
+      <div class="card bg-teal" style="padding:0" data-card="">
+        <div class="img-zone iz-teal" style="height:160px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body" style="padding:16px;gap:6px">
+          <div class="quote-mark">“</div>
+          <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">Rastgele birşeyler yazarız</div>
+          <div class="e-divider white" style="margin:8px 0"></div>
+          <div class="author-row">
+            <div class="author-av"><div class="img-zone" style="height:28px;width:28px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad,</span>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-cream outlined" style="padding:0" data-card="">
+        <div class="img-zone iz-warm" style="height:160px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body" style="padding:16px;gap:6px">
+          <div class="quote-mark dark">“</div>
+          <div class="e-title md dark" style="font-size:12px;line-height:1.6" contenteditable="true">Biraz daha rastgele şeyler</div>
+          <div class="e-divider" style="margin:8px 0"></div>
+          <div class="author-row">
+            <div class="author-av"><div class="img-zone" style="height:28px;width:28px;border-radius:50%;background:rgba(30,30,30,.12)" onclick="pickImg(this)"></div></div>
+            <span class="e-name dark" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 more quote cards -->
+    <div class="row halves" style="gap:12px">
+      <div class="card bg-charcoal" style="padding:0" data-card="">
+        <div class="img-zone iz-dark" style="height:140px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body" style="padding:14px;gap:5px">
+          <div class="quote-mark">“</div>
+          <div class="e-title sm white" style="line-height:1.6" contenteditable="true">Biraz daha az rastgele şeyler</div>
+          <div class="e-divider white" style="margin:6px 0"></div>
+          <div class="author-row">
+            <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.15)" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-burg" style="padding:0" data-card="">
+        <div class="img-zone iz-burg" style="height:140px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+          <div class="img-resize-handle" data-resize=""></div>
+        </div>
+        <div class="card-body" style="padding:14px;gap:5px">
+          <div class="quote-mark">“</div>
+          <div class="e-title sm white" style="line-height:1.6" contenteditable="true">Tasarım güzel oldu he:)</div>
+          <div class="e-divider white" style="margin:6px 0"></div>
+          <div class="author-row">
+            <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div>
+            <span class="e-name white" contenteditable="true">Ad Soyad</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wide teacher quote card -->
+    <div class="card bg-gold outlined" style="flex-direction:row;padding:0;overflow:hidden" data-card="">
+      <div style="flex:0 0 160px">
+        <div class="img-zone iz-gold" style="height:100%;min-height:130px" onclick="pickImg(this)">
+          <div class="iz-hint"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf</span></div>
+        </div>
+      </div>
+      <div class="card-body" style="flex:1;padding:16px 18px;gap:6px">
+        <span class="e-tag teal" contenteditable="true">Öğretmen Sözü</span>
+        <div class="quote-mark dark" style="font-size:40px;line-height:.7">“</div>
+        <div class="e-title md dark" style="font-size:12px;line-height:1.6" contenteditable="true">Bu kart çok mu kısa oldu acaba</div>
+        <div class="e-divider" style="margin:8px 0"></div>
+        <div class="author-row">
+          <div class="author-av"><div class="img-zone" style="height:28px;width:28px;border-radius:50%;background:rgba(30,30,30,.12)" onclick="pickImg(this)"></div></div>
+          <span class="e-name dark" contenteditable="true">Ad Soyad, Öğretmen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-right 2 -->
+
+</div>
+<p class="spread-label">Çift Sayfa Yayılımı — 2/4 &nbsp;·&nbsp; Öğrenci Haberleri &amp; Röportajlar</p>
+</div>
+
+
+<script>
+// ═══ IMAGE PICKER ═══
+let _imgTarget = null;
+const picker = document.getElementById('imgPicker');
+
+function pickImg(zone){
+  _imgTarget = zone;
+  picker.value = '';
+  picker.click();
+}
+
+picker.addEventListener('change', function(){
+  if(!this.files||!this.files[0]||!_imgTarget) return;
+  const r = new FileReader();
+  r.onload = e => {
+    _imgTarget.style.backgroundImage = `url(${e.target.result})`;
+    _imgTarget.style.backgroundSize  = 'cover';
+    _imgTarget.style.backgroundPosition = 'center';
+    // remove gradient class
+    ['iz-default','iz-teal','iz-burg','iz-warm','iz-dark','iz-gold','iz-mid'].forEach(c=>_imgTarget.classList.remove(c));
+  };
+  r.readAsDataURL(this.files[0]);
+});
+
+// ═══ PANEL ═══
+let _selCard = null;
+let _selImg  = null;
+
+const panel = document.getElementById('propPanel');
+
+function openPanel(card){
+  _selCard = card;
+  // mark selected
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+
+  // detect first img zone inside card
+  _selImg = card.querySelector('.img-zone');
+
+  // show/hide sections
+  const hasBg  = !card.classList.contains('no-select');
+  const hasImg = !!_selImg;
+
+  document.getElementById('ppBgSection').style.display   = hasBg  ? '' : 'none';
+  document.getElementById('ppImgSection').style.display  = hasImg ? '' : 'none';
+  document.getElementById('ppTextSection').style.display = '';
+  document.getElementById('ppTagSection').style.display  = card.querySelector('.e-tag') ? '' : 'none';
+  document.getElementById('ppActions').style.display = '';
+
+  // set swatch active states
+  document.querySelectorAll('#ppBgSwatches .swatch').forEach(s=>{
+    s.classList.toggle('active', card.classList.contains(s.dataset.bg));
+  });
+
+  // img height slider
+  if(_selImg){
+    const h = parseInt(_selImg.style.height)||120;
+    document.getElementById('ppImgHeight').value = h;
+    document.getElementById('ppImgHeightVal').textContent = h+'px';
+  }
+
+  panel.classList.add('open');
+}
+
+function closePanel(){
+  panel.classList.remove('open');
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'));
+  _selCard = null; _selImg = null;
+}
+
+// card click → open panel
+document.querySelectorAll('[data-card]').forEach(card=>{
+  card.addEventListener('click', function(e){
+    // don't open panel if clicking on text or image
+    if(e.target.closest('[contenteditable]')) return;
+    if(e.target.closest('.img-zone') && !e.target.closest('[data-resize]')) return;
+    e.stopPropagation();
+    openPanel(this);
+  });
+});
+
+// close panel when clicking outside
+document.addEventListener('click', function(e){
+  if(!panel.contains(e.target) && !e.target.closest('[data-card]')){
+    closePanel();
+  }
+});
+
+// ─ BG SWATCHES ─
+const BG_CLASSES = ['bg-teal','bg-burg','bg-cream','bg-charcoal','bg-gold','bg-white','bg-pale','bg-custom'];
+document.querySelectorAll('#ppBgSwatches .swatch').forEach(s=>{
+  s.addEventListener('click', function(){
+    if(!_selCard) return;
+    BG_CLASSES.forEach(c=>_selCard.classList.remove(c));
+    if(this.dataset.bg==='bg-custom'){
+      _selCard.style.background = document.getElementById('ppCustomColor').value;
+    } else {
+      _selCard.style.background = '';
+      _selCard.classList.add(this.dataset.bg);
+    }
+    document.querySelectorAll('#ppBgSwatches .swatch').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.getElementById('ppCustomColor').addEventListener('input', function(){
+  if(!_selCard) return;
+  BG_CLASSES.forEach(c=>_selCard.classList.remove(c));
+  _selCard.style.background = this.value;
+});
+
+// ─ IMG SWATCHES ─
+const IZ_CLASSES = ['iz-default','iz-teal','iz-burg','iz-warm','iz-dark','iz-gold','iz-mid'];
+document.querySelectorAll('#ppImgSwatches .swatch').forEach(s=>{
+  s.addEventListener('click', function(){
+    if(!_selImg) return;
+    IZ_CLASSES.forEach(c=>_selImg.classList.remove(c));
+    _selImg.classList.add(this.dataset.iz);
+    _selImg.style.backgroundImage = '';
+    document.querySelectorAll('#ppImgSwatches .swatch').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ─ IMG HEIGHT SLIDER ─
+document.getElementById('ppImgHeight').addEventListener('input', function(){
+  if(!_selImg) return;
+  _selImg.style.height = this.value + 'px';
+  document.getElementById('ppImgHeightVal').textContent = this.value+'px';
+});
+
+// ─ UPLOAD from panel ─
+document.getElementById('ppUploadBtn').addEventListener('click', function(){
+  if(!_selImg) return;
+  _imgTarget = _selImg;
+  picker.value = '';
+  picker.click();
+});
+
+// ─ TEXT COLOR ─
+document.querySelectorAll('[data-txtcls]').forEach(s=>{
+  s.addEventListener('click', function(){
+    if(!_selCard) return;
+    const cls = this.dataset.txtcls;
+    _selCard.querySelectorAll('.e-title,.e-body,.e-name').forEach(el=>{
+      ['white','dark','gold','teal'].forEach(c=>el.classList.remove(c));
+      el.classList.add(cls);
+    });
+  });
+});
+
+// ─ FONT SIZE ─
+document.getElementById('ppFontSize').addEventListener('input', function(){
+  if(!_selCard) return;
+  const focused = _selCard.querySelector('[contenteditable]:focus');
+  if(focused) focused.style.fontSize = this.value+'px';
+  document.getElementById('ppFontSizeVal').textContent = this.value+'px';
+});
+
+// ─ TAG COLOR ─
+document.querySelectorAll('[data-tagcls]').forEach(s=>{
+  s.addEventListener('click', function(){
+    if(!_selCard) return;
+    const cls = this.dataset.tagcls;
+    _selCard.querySelectorAll('.e-tag').forEach(el=>{
+      ['teal','gold','burg','white','dark'].forEach(c=>el.classList.remove(c));
+      el.classList.add(cls);
+    });
+  });
+});
+
+// ─ DELETE card ─
+document.getElementById('ppDelBtn').addEventListener('click', function(){
+  if(!_selCard) return;
+  if(confirm('Bu kartı silmek istediğinden emin misin?')){
+    _selCard.remove();
+    closePanel();
+  }
+});
+
+// ─ DUPLICATE card ─
+document.getElementById('ppDupeBtn').addEventListener('click', function(){
+  if(!_selCard) return;
+  const clone = _selCard.cloneNode(true);
+  clone.classList.remove('selected');
+  clone.setAttribute('data-card','');
+  clone.addEventListener('click', function(e){
+    if(e.target.closest('[contenteditable]')) return;
+    if(e.target.closest('.img-zone') && !e.target.closest('[data-resize]')) return;
+    e.stopPropagation();
+    openPanel(this);
+  });
+  // insert after
+  _selCard.parentNode.insertBefore(clone, _selCard.nextSibling);
+  // rebind resize on clone
+  clone.querySelectorAll('[data-resize]').forEach(h => bindResize(h));
+  clone.querySelectorAll('.img-zone').forEach(z => {
+    if(!z.closest('.author-av')) z.onclick = ()=>pickImg(z);
+  });
+  closePanel();
+});
+
+// ═══ IMAGE RESIZE HANDLES ═══
+function bindResize(handle){
+  handle.addEventListener('mousedown', function(e){
+    e.stopPropagation();
+    const zone = handle.closest('.img-zone');
+    if(!zone) return;
+    const startY  = e.clientY;
+    const startH  = zone.offsetHeight;
+    function onMove(ev){
+      const newH = Math.max(40, startH + ev.clientY - startY);
+      zone.style.height = newH + 'px';
+      if(_selImg === zone){
+        document.getElementById('ppImgHeight').value = newH;
+        document.getElementById('ppImgHeightVal').textContent = Math.round(newH)+'px';
+      }
+    }
+    function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+document.querySelectorAll('[data-resize]').forEach(bindResize);
+
+// ═══ ENTER KEY ═══
+document.querySelectorAll('[contenteditable]').forEach(el=>{
+  el.addEventListener('keydown', function(e){
+    if(e.key==='Enter'&&!e.shiftKey){
+      e.preventDefault();
+      document.execCommand('insertLineBreak');
+    }
+  });
+});
+
+// ═══ SAVE HTML ═══
+document.getElementById('saveBtn').addEventListener('click', function(){
+  const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html],{type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'efl_dergisi.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     SPREAD 3 — SORU SIRASI ÖĞRENCİLERDE (ROportaj Sayfaları)
+     ═══════════════════════════════════════════════════════ -->
+<style>
+/* Extra styles for interview spread */
+.interview-intro {
+  background: var(--cream-dk);
+  border-left: 5px solid var(--teal-lt);
+  padding: 18px 20px;
+  border-radius: 4px;
+}
+.interview-intro-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--teal); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.interview-intro-text {
+  font-size: 10px; line-height: 1.75; color: var(--mid);
+}
+
+.teacher-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.teacher-card {
+  background: var(--white);
+  border: 1.5px solid #e8e2d8;
+  border-radius: 4px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: outline .1s;
+}
+.teacher-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+}
+.teacher-card.c-teal::before   { background: var(--teal-lt); }
+.teacher-card.c-burg::before   { background: var(--burg-lt); }
+.teacher-card.c-gold::before   { background: var(--gold); }
+.teacher-card.c-charcoal::before { background: var(--charcoal); }
+
+.teacher-card:not(.no-select):hover { outline: 1.5px dashed var(--teal-lt); outline-offset: 2px; cursor: pointer; }
+.teacher-card.selected { outline: 2.5px solid var(--teal-lt); outline-offset: 2px; }
+
+.tc-subject {
+  font-size: 7.5px; letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 600; color: var(--teal);
+}
+.tc-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px; font-weight: 700; color: var(--charcoal);
+  line-height: 1.2;
+}
+.tc-divider { height: 1px; background: rgba(30,30,30,.08); margin: 2px 0; }
+.tc-answer {
+  font-size: 9.5px; line-height: 1.6; color: var(--mid);
+}
+.tc-profession {
+  font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  margin-top: 2px;
+}
+.tc-profession.teal { color: var(--teal-lt); }
+.tc-profession.burg { color: var(--burg-lt); }
+.tc-profession.gold { color: var(--gold); }
+.tc-profession.dark { color: var(--charcoal); }
+
+/* Full-width teacher card for special ones */
+.teacher-card.full { grid-column: 1 / -1; flex-direction: row; gap: 16px; align-items: center; }
+.teacher-card.full .tc-img { flex: 0 0 80px; }
+
+/* Big question heading */
+.big-q-block {
+  background: var(--charcoal);
+  border-radius: 4px;
+  padding: 22px 24px;
+  position: relative; overflow: hidden;
+}
+.big-q-block::before {
+  content: '?';
+  font-family: 'Playfair Display', serif;
+  font-size: 140px; font-weight: 900;
+  color: rgba(255,255,255,.04);
+  position: absolute; right: -10px; top: -20px;
+  line-height: 1;
+}
+.big-q-eyebrow {
+  font-size: 8px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold); font-weight: 600; margin-bottom: 8px;
+}
+.big-q-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 900; color: #fff;
+  line-height: 1.25; max-width: 85%;
+}
+.big-q-title em { color: var(--teal-lt); font-style: italic; }
+.big-q-sub {
+  font-size: 10px; color: rgba(255,255,255,.6);
+  margin-top: 8px; line-height: 1.6;
+}
+
+/* Highlighted profession tag */
+.prof-badge {
+  display: inline-block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px; letter-spacing: 2px;
+  padding: 3px 10px; border-radius: 2px;
+  margin-top: 4px;
+}
+.prof-badge.teal    { background: var(--teal-lt); color: #fff; }
+.prof-badge.burg    { background: var(--burg-lt); color: #fff; }
+.prof-badge.gold    { background: var(--gold);    color: #fff; }
+.prof-badge.charcoal{ background: var(--charcoal); color: #fff; }
+.prof-badge.pale    { background: var(--teal-pale); color: var(--teal); }
+
+/* Featured teacher highlight card */
+.featured-teacher {
+  background: var(--teal);
+  border-radius: 4px;
+  padding: 16px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.ft-img-zone {
+  flex: 0 0 70px; height: 70px; border-radius: 50%;
+  overflow: hidden; cursor: pointer;
+}
+.ft-body { flex: 1; }
+.ft-quote-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px; line-height: .7;
+  color: rgba(255,255,255,.25);
+  margin-bottom: 2px;
+}
+
+/* Stat pills */
+.stat-pill-row { display: flex; gap: 8px; }
+.stat-pill {
+  flex: 1; border-radius: 4px; padding: 10px 8px;
+  text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.stat-pill .sp-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1;
+}
+.stat-pill .sp-label {
+  font-size: 7.5px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+</style>
+
+<div class="spread-wrap">
+<div class="spread">
+
+  <!-- ══ LEFT PAGE 3 ══ -->
+  <div class="page page-left">
+
+    <div class="running-head no-select">
+      <span class="section-tag e-tag teal" contenteditable="true">Röportaj</span>
+      <div class="mag-wordmark">EFL <span>DERGİ</span></div>
+      <span class="page-num" contenteditable="true">· Tarih</span>
+    </div>
+
+    <!-- Big question block -->
+    <div class="big-q-block card no-select" data-card="">
+      <div class="big-q-eyebrow" contenteditable="true">SORU SIRASI ÖĞRENCİLERDE</div>
+      <div class="big-q-title" contenteditable="true">Erzincan Fen Lisesi Öğretmenlerine Sorduk:<br><em>Öğretmen Olmasaydınız Hangi Mesleği Yapmak İsterdiniz?</em></div>
+      <div class="big-q-sub" contenteditable="true">Öğretmenlerimizi daha yakından tanımak ve onların hayallerini dergimiz aracılığıyla sizlerle paylaşmak istedik.</div>
+    </div>
+
+    <!-- Intro box -->
+    <div class="interview-intro">
+      <div class="interview-intro-title" contenteditable="true">Röportaj Hakkında</div>
+      <div class="interview-intro-text" contenteditable="true">Erzincan Fen Lisesi öğrencileri olarak öğretmenlerimizi daha yakından tanımak ve onların hayallerini dergimiz aracılığıyla sizlerle paylaşmak istedik. Öğretmenlerimize öğrenciler olarak bu sefer biz sorduk: öğretmen olmasaydınız hangi mesleği yapmak isterdiniz?
+
+Çoğu öğretmenimiz kendisi için en uygun mesleğin öğretmenlik olduğunu dile getirse de arkadaşlarımla öğretmenlerimizden ikinci bir cevabı almak için ısrarcı olduk. Bizi kırmayıp bize cevap veren bütün öğretmenlerimize tekrardan teşekkür ederiz.</div>
+    </div>
+
+    <!-- Featured answer - Müdür Bey -->
+    <div class="featured-teacher card" data-card="">
+      <div class="ft-img-zone">
+        <div class="img-zone iz-teal" style="height:70px;width:70px;border-radius:50%" onclick="pickImg(this)">
+          <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24" style="width:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
+        </div>
+      </div>
+      <div class="ft-body">
+        <div class="ft-quote-mark">“</div>
+        <div class="e-title sm white" contenteditable="true">Fizik mühendisi olmak isterdim.</div>
+        <div style="margin-top:6px; display:flex; align-items:center; gap:6px">
+          <span class="prof-badge pale" contenteditable="true">Fizik Mühendisi</span>
+        </div>
+        <div class="e-body white" style="margin-top:6px; font-size:9px" contenteditable="true">Şahin Hocam — Müdür Bey (Fizik Öğretmeni)</div>
+      </div>
+    </div>
+
+    <!-- Stat pills -->
+    <div class="stat-pill-row">
+      <div class="stat-pill bg-pale outlined card" style="border:1.5px solid #d0e8e6" data-card="">
+        <div class="sp-num" style="color:var(--teal-lt)" contenteditable="true">28</div>
+        <div class="sp-label" style="color:var(--teal)" contenteditable="true">Öğretmen</div>
+        <div class="e-body dark" style="font-size:8px;text-align:center" contenteditable="true">Röportaj yapıldı</div>
+      </div>
+      <div class="stat-pill bg-charcoal card" data-card="">
+        <div class="sp-num" style="color:var(--burg-lt)" contenteditable="true">5+</div>
+        <div class="sp-label" style="color:rgba(255,255,255,.7)" contenteditable="true">Farklı Meslek</div>
+        <div class="e-body white" style="font-size:8px;text-align:center" contenteditable="true">Hayali meslek</div>
+      </div>
+      <div class="stat-pill bg-gold card" data-card="">
+        <div class="sp-num" style="color:var(--charcoal)" contenteditable="true">1</div>
+        <div class="sp-label" style="color:var(--charcoal)" contenteditable="true">Öğretmen</div>
+        <div class="e-body dark" style="font-size:8px;text-align:center" contenteditable="true">Yine öğretmen!</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Röportaj</span><div class="e-title sm white" contenteditable="true">Soru Sırası Öğrencilerde</div><div class="e-body white" contenteditable="true">EFL Dergi Röportaj Serisi</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-left 3 -->
+
+  <!-- ══ RIGHT PAGE 3 ══ -->
+  <div class="page page-right">
+
+    <div class="running-head no-select">
+      <span class="section-tag" contenteditable="true">Öğretmen Röportajları</span>
+      <span class="issue-info" contenteditable="true">SAYI · Tarih</span>
+      <span class="page-num" contenteditable="true"></span>
+    </div>
+
+    <!-- Teacher cards grid -->
+    <div class="teacher-grid" style="flex:1">
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Bilişim Teknolojileri</div>
+        <div class="tc-name" contenteditable="true">Ahmet Emre Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Elektrik-elektronik mühendisi olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">Mühendis</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Matematik</div>
+        <div class="tc-name" contenteditable="true">Muammer Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Esnaf olmak isterdim.</div>
+        <span class="prof-badge burg" contenteditable="true">Esnaf</span>
+      </div>
+
+      <div class="teacher-card c-gold" data-card="">
+        <div class="tc-subject" contenteditable="true">Matematik</div>
+        <div class="tc-name" contenteditable="true">Hamza Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Doktor olmak isterdim.</div>
+        <span class="prof-badge gold" contenteditable="true">Doktor</span>
+      </div>
+
+      <div class="teacher-card c-charcoal" data-card="">
+        <div class="tc-subject" contenteditable="true">Matematik</div>
+        <div class="tc-name" contenteditable="true">Serdar Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Mühendis olmak isterdim.</div>
+        <span class="prof-badge charcoal" contenteditable="true">Mühendis</span>
+      </div>
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Kimya</div>
+        <div class="tc-name" contenteditable="true">Selahattin Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Öğretmen olmak isterdim.</div>
+        <span class="prof-badge pale" contenteditable="true">Öğretmen 😊</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Müdür Yardımcısı</div>
+        <div class="tc-name" contenteditable="true">Rıdvan Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Vali olmak isterdim.</div>
+        <span class="prof-badge burg" contenteditable="true">Vali</span>
+      </div>
+
+      <div class="teacher-card c-gold full" data-card="">
+        <div style="flex:1">
+          <div class="tc-subject" contenteditable="true">Müdür Yardımcısı</div>
+          <div class="tc-name" contenteditable="true">Nebahat Hocam</div>
+          <div class="tc-divider"></div>
+          <div class="tc-answer" contenteditable="true">Tiyatro oyuncusu olmak veya ressamlıkla ilgilenmek isterdim.</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-self:center">
+          <span class="prof-badge gold" contenteditable="true">Tiyatrocu</span>
+          <span class="prof-badge teal" contenteditable="true">Ressam</span>
+        </div>
+      </div>
+
+      <div class="teacher-card c-charcoal" data-card="">
+        <div class="tc-subject" contenteditable="true">Tarih</div>
+        <div class="tc-name" contenteditable="true">Mustafa Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Ünlü bir aşçı olmak ve herkes tarafından bilinmek isterdim.</div>
+        <span class="prof-badge charcoal" contenteditable="true">Şef / Aşçı</span>
+      </div>
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Din Kültürü</div>
+        <div class="tc-name" contenteditable="true">Handan Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Mühendislikten daha çok pilot olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">Pilot ✈️</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Coğrafya</div>
+        <div class="tc-name" contenteditable="true">Burcu Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Küçük bir pastanem olsun isterdim.</div>
+        <span class="prof-badge burg" contenteditable="true">Pastacı 🎂</span>
+      </div>
+
+    </div>
+
+    <!-- footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Sayfa</span><div class="e-title sm white" contenteditable="true">Devamı →</div><div class="e-body white" contenteditable="true">Daha fazla röportaj</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">EFL</span><div class="e-title sm white" contenteditable="true">Erzincan Fen Lisesi</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-right 3 -->
+
+</div>
+<p class="spread-label">Çift Sayfa Yayılımı — 3/4 &nbsp;·&nbsp; Röportaj: Soru Sırası Öğrencilerde</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SPREAD 4 — RÖPORTAJ DEVAMI
+     ═══════════════════════════════════════════════════════ -->
+<div class="spread-wrap">
+<div class="spread">
+
+  <!-- ══ LEFT PAGE 4 ══ -->
+  <div class="page page-left">
+
+    <div class="running-head no-select">
+      <span class="section-tag e-tag teal" contenteditable="true">Röportaj Devamı</span>
+      <div class="mag-wordmark">EFL <span>DERGİ</span></div>
+      <span class="page-num" contenteditable="true">· Tarih</span>
+    </div>
+
+    <!-- Teacher grid left page -->
+    <div class="teacher-grid" style="flex:1">
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Biyoloji</div>
+        <div class="tc-name" contenteditable="true">Hülya Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">İş kadını olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">İş Kadını</span>
+      </div>
+
+      <div class="teacher-card c-gold" data-card="">
+        <div class="tc-subject" contenteditable="true">Felsefe</div>
+        <div class="tc-name" contenteditable="true">İhsan Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Kendi işini yöneten bir iş adamı olmak isterdim.</div>
+        <span class="prof-badge gold" contenteditable="true">İş Adamı</span>
+      </div>
+
+      <div class="teacher-card c-charcoal" data-card="">
+        <div class="tc-subject" contenteditable="true">Kimya</div>
+        <div class="tc-name" contenteditable="true">Erdal Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Kimya ile ilgili bir alan olduğu için eczacı olmak isterdim.</div>
+        <span class="prof-badge charcoal" contenteditable="true">Eczacı 💊</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Müdür Yardımcısı</div>
+        <div class="tc-name" contenteditable="true">Sadi Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Çiftçi olmak isterdim.</div>
+        <span class="prof-badge burg" contenteditable="true">Çiftçi 🌱</span>
+      </div>
+
+      <div class="teacher-card c-teal full" data-card="">
+        <div style="flex:1">
+          <div class="tc-subject" contenteditable="true">Fizik</div>
+          <div class="tc-name" contenteditable="true">Derya Hocam</div>
+          <div class="tc-divider"></div>
+          <div class="tc-answer" contenteditable="true">Geç açılan bir restoran sahibi olmak isterdim. İstediğim zaman dükkânı açıp özgür olmak isterdim.</div>
+        </div>
+        <span class="prof-badge teal" style="align-self:center" contenteditable="true">Restoran Sahibi 🍽️</span>
+      </div>
+
+      <div class="teacher-card c-gold" data-card="">
+        <div class="tc-subject" contenteditable="true">Edebiyat</div>
+        <div class="tc-name" contenteditable="true">Muhammed Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Şehirden uzak bir yerde çiftçilikle uğraşmak isterdim.</div>
+        <span class="prof-badge gold" contenteditable="true">Çiftçi 🌻</span>
+      </div>
+
+      <div class="teacher-card c-charcoal" data-card="">
+        <div class="tc-subject" contenteditable="true">Edebiyat</div>
+        <div class="tc-name" contenteditable="true">İlknur Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Hukuk okuyup bu alanda bir meslekle uğraşmak isterdim.</div>
+        <span class="prof-badge charcoal" contenteditable="true">Hukukçu ⚖️</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Edebiyat</div>
+        <div class="tc-name" contenteditable="true">Mehmet Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Savcı olmak isterdim.</div>
+        <span class="prof-badge burg" contenteditable="true">Savcı ⚖️</span>
+      </div>
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Rehber Öğretmeni</div>
+        <div class="tc-name" contenteditable="true">Hacer Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Doktor olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">Doktor 🏥</span>
+      </div>
+
+      <div class="teacher-card c-gold" data-card="">
+        <div class="tc-subject" contenteditable="true">Fizik</div>
+        <div class="tc-name" contenteditable="true">Yaşar Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Futbolcu olmak isterdim.</div>
+        <span class="prof-badge gold" contenteditable="true">Futbolcu ⚽</span>
+      </div>
+
+    </div>
+
+    <!-- footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Röportaj</span><div class="e-title sm white" contenteditable="true">Soru Sırası Öğrencilerde</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">EFL</span><div class="e-title sm white" contenteditable="true">Erzincan Fen Lisesi</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-left 4 -->
+
+  <!-- ══ RIGHT PAGE 4 ══ -->
+  <div class="page page-right">
+
+    <div class="running-head no-select">
+      <span class="section-tag" contenteditable="true">Röportaj Devamı</span>
+      <span class="issue-info" contenteditable="true">SAYI · Tarih</span>
+      <span class="page-num" contenteditable="true"></span>
+    </div>
+
+    <div class="teacher-grid" style="flex:1">
+
+      <div class="teacher-card c-charcoal full" data-card="">
+        <div style="flex:1">
+          <div class="tc-subject" contenteditable="true">Müzik</div>
+          <div class="tc-name" contenteditable="true">Murat Hocam</div>
+          <div class="tc-divider"></div>
+          <div class="tc-answer" contenteditable="true">Yolcu uçağında pilot olmak isterdim. Fanatik Trabzonsporlu'yum.</div>
+        </div>
+        <span class="prof-badge teal" style="align-self:center" contenteditable="true">Pilot ✈️ + Trabzonspor ❤️</span>
+      </div>
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">İngilizce</div>
+        <div class="tc-name" contenteditable="true">Murat Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Polis olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">Polis 👮</span>
+      </div>
+
+      <div class="teacher-card c-gold" data-card="">
+        <div class="tc-subject" contenteditable="true">Matematik</div>
+        <div class="tc-name" contenteditable="true">Uğursan Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Futbolcu olmak isterdim.</div>
+        <span class="prof-badge gold" contenteditable="true">Futbolcu ⚽</span>
+      </div>
+
+      <div class="teacher-card c-burg" data-card="">
+        <div class="tc-subject" contenteditable="true">Biyoloji</div>
+        <div class="tc-name" contenteditable="true">Tuğba Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Doktor olmak isterdim. Biyolojiyle alakalı zaten.</div>
+        <span class="prof-badge burg" contenteditable="true">Doktor 🏥</span>
+      </div>
+
+      <div class="teacher-card c-teal" data-card="">
+        <div class="tc-subject" contenteditable="true">Matematik</div>
+        <div class="tc-name" contenteditable="true">Halil İbrahim Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Mühendis olmak isterdim.</div>
+        <span class="prof-badge teal" contenteditable="true">Mühendis</span>
+      </div>
+
+      <div class="teacher-card c-charcoal" data-card="">
+        <div class="tc-subject" contenteditable="true">İngilizce</div>
+        <div class="tc-name" contenteditable="true">Harun Hocam</div>
+        <div class="tc-divider"></div>
+        <div class="tc-answer" contenteditable="true">Eskiden tek istemediğim meslek öğretmenlikti.</div>
+        <span class="prof-badge charcoal" contenteditable="true">Sürpriz 😄</span>
+      </div>
+
+      <div class="teacher-card c-gold full" data-card="">
+        <div style="flex:1">
+          <div class="tc-subject" contenteditable="true">Beden Eğitimi</div>
+          <div class="tc-name" contenteditable="true">Vedat Hocam</div>
+          <div class="tc-divider"></div>
+          <div class="tc-answer" contenteditable="true">Futbolcu olma hayaliyle yola çıkmıştım ve beden eğitimi öğretmeni oldum. Futbolcu olmak isterdim.</div>
+        </div>
+        <span class="prof-badge gold" style="align-self:center" contenteditable="true">Futbolcu ⚽</span>
+      </div>
+
+    </div>
+
+    <!-- Closing pullquote -->
+    <div class="pullquote-bar card no-select" data-card="">
+      <div class="e-title md white" contenteditable="true">"Bizi kırmayıp bize cevap veren bütün öğretmenlerimize tekrardan teşekkür ederiz."</div>
+      <div class="author-row" style="margin-top:8px">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase" contenteditable="true">EFL Dergi Ekibi</div>
+      </div>
+    </div>
+
+    <!-- footer -->
+    <div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Son</span><div class="e-title sm white" contenteditable="true">Röportaj Serisi Bitti</div><div class="e-body white" contenteditable="true">EFL Dergi</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">EFL</span><div class="e-title sm white" contenteditable="true">Erzincan Fen Lisesi</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>
+
+  </div><!-- /page-right 4 -->
+
+</div>
+<p class="spread-label">Çift Sayfa Yayılımı — 4/4 &nbsp;·&nbsp; Röportaj: Soru Sırası Öğrencilerde (Devam)</p>
+</div>
+
+<script>
+// Bind card click for new interview cards
+document.querySelectorAll('.teacher-card[data-card]').forEach(card=>{
+  card.addEventListener('click', function(e){
+    if(e.target.closest('[contenteditable]')) return;
+    e.stopPropagation();
+    openPanel(this);
+  });
+});
+// Rebind img zones in new spreads
+document.querySelectorAll('.spread-wrap:nth-child(n+4) .img-zone').forEach(z=>{
+  if(!z.closest('.author-av') && !z.onclick) z.onclick = ()=>pickImg(z);
+});
+</script>
+
+
+</body></html>

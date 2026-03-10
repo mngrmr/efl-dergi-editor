@@ -199,12 +199,13 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
 <div class="toolbar">
   <div class="tb-logo">EFL DERGİ · EDİTÖR</div>
   <span class="tb-hint">🖱 Karta tıkla → sağda özellik paneli açılır &nbsp;|&nbsp; ✏️ Metne çift tıkla → düzenle &nbsp;|&nbsp; 🖼 Görsele tıkla → fotoğraf yükle</span>
+  <button class="tb-btn" id="addPageBtn" style="background:var(--teal);border-color:var(--teal);color:#fff">＋ Yeni Sayfa</button>
   <button class="tb-btn" onclick="window.print()">🖨 PDF Kaydet</button>
   <button class="tb-btn accent" id="saveBtn">💾 HTML İndir</button>
 </div>
 
 <!-- ═══════════ PROPERTY PANEL ═══════════ -->
-<div id="propPanel" class="">
+<div id="propPanel">
   <div class="pp-header">
     <span class="pp-title" id="ppTitle">KART ÖZELLİKLERİ</span>
     <button class="pp-close" onclick="closePanel()">✕</button>
@@ -216,7 +217,7 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
       <div class="pp-label">Kart Arka Planı</div>
       <div class="pp-row" id="ppBgSwatches">
         <div class="swatch" style="background:#1E1E1E" data-bg="bg-charcoal" title="Karbon"></div>
-        <div class="swatch active" style="background:#1A7B7B" data-bg="bg-teal" title="Teal"></div>
+        <div class="swatch" style="background:#1A7B7B" data-bg="bg-teal" title="Teal"></div>
         <div class="swatch" style="background:#7B1F2E" data-bg="bg-burg" title="Bordo"></div>
         <div class="swatch" style="background:#F5E8C4" data-bg="bg-gold" title="Altın"></div>
         <div class="swatch" style="background:#EDE5D5" data-bg="bg-cream" title="Krem"></div>
@@ -229,10 +230,10 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
     </div>
 
     <!-- Image zone color -->
-    <div class="pp-section" id="ppImgSection" style="">
+    <div class="pp-section" id="ppImgSection" style="display:none">
       <div class="pp-label">Görsel Placeholder Rengi</div>
       <div class="pp-row" id="ppImgSwatches">
-        <div class="swatch iz-default active" data-iz="iz-default" title="Mavi-Gri"></div>
+        <div class="swatch iz-default" data-iz="iz-default" title="Mavi-Gri"></div>
         <div class="swatch iz-teal" data-iz="iz-teal" title="Teal"></div>
         <div class="swatch iz-burg" data-iz="iz-burg" title="Bordo"></div>
         <div class="swatch iz-warm" data-iz="iz-warm" title="Sıcak Krem"></div>
@@ -242,12 +243,12 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
       </div>
       <div class="pp-label" style="margin-top:6px">Görsel Yüksekliği</div>
       <input type="range" class="pp-slider" id="ppImgHeight" min="60" max="320" value="120">
-      <div style="font-size:9px;color:rgba(255,255,255,.4);text-align:right" id="ppImgHeightVal">160px</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.4);text-align:right" id="ppImgHeightVal">120px</div>
       <button class="pp-btn pp-ok" id="ppUploadBtn">📷 Fotoğraf Yükle</button>
     </div>
 
     <!-- Text block color -->
-    <div class="pp-section" id="ppTextSection" style="">
+    <div class="pp-section" id="ppTextSection" style="display:none">
       <div class="pp-label">Yazı Rengi</div>
       <div class="pp-row">
         <div class="swatch" style="background:#fff" data-txtcls="white" title="Beyaz"></div>
@@ -261,7 +262,7 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
     </div>
 
     <!-- Tag -->
-    <div class="pp-section" id="ppTagSection" style="">
+    <div class="pp-section" id="ppTagSection" style="display:none">
       <div class="pp-label">Etiket Rengi</div>
       <div class="pp-row">
         <div class="swatch" style="background:var(--teal-lt)" data-tagcls="teal" title="Teal"></div>
@@ -297,7 +298,7 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
     </div>
 
     <!-- Big headline block -->
-    <div class="headline-block card no-select">
+    <div class="headline-block card" data-card="">
       <div class="eyebrow" contenteditable="true">Kapak Hikâyesi</div>
       <h1 contenteditable="true">Biriniz<br>Buraya<br><em>Başlık koysun</em></h1>
       <p class="hl-sub" contenteditable="true">Bu dönem öğrencilerimizin çıkardığı projeler, etkinlikler ve topluluk destekleri — hepsini burada bulabilirsiniz.</p>
@@ -305,8 +306,8 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
 
     <!-- 2 big cards side by side -->
     <div class="row halves" style="gap:12px">
-      <div class="card bg-teal" data-card="" style="">
-        <div class="img-zone iz-default" style="height:160px" onclick="pickImg(this)">
+      <div class="card bg-teal" data-card="">
+        <div class="img-zone iz-warm" style="height:160px" onclick="pickImg(this)">
           <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span>Fotoğraf Yükle</span></div>
           <div class="img-resize-handle" data-resize=""></div>
         </div>
@@ -357,7 +358,7 @@ body{background:#CFCBC4;font-family:'DM Sans',sans-serif;display:flex;flex-direc
     </div>
 
     <!-- Pullquote -->
-    <div class="pullquote-bar card no-select" data-card="">
+    <div class="pullquote-bar card" data-card="">
       <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">Aşağıdaki etkinlikler ile alakalı birşeyler olabilir</div>
       <div class="author-row" style="margin-top:10px">
         <div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div>
@@ -651,7 +652,7 @@ function openPanel(card){
   _selImg = card.querySelector('.img-zone');
 
   // show/hide sections
-  const hasBg  = !card.classList.contains('no-select');
+  const hasBg  = true; // all cards now support bg color
   const hasImg = !!_selImg;
 
   document.getElementById('ppBgSection').style.display   = hasBg  ? '' : 'none';
@@ -859,6 +860,300 @@ document.getElementById('saveBtn').addEventListener('click', function(){
   a.click();
   URL.revokeObjectURL(a.href);
 });
+
+// ═══════════════════════════════════════════════════════
+// YENİ SAYFA OLUŞTURMA SİSTEMİ
+// ═══════════════════════════════════════════════════════
+
+// ─ Spread counter ─
+let spreadCount = document.querySelectorAll('.spread-wrap').length;
+
+// ─ Open modal ─
+document.getElementById('addPageBtn').addEventListener('click', () => {
+  document.getElementById('pageModal').classList.add('open');
+});
+
+// ─ Close modal ─
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('pageModal').classList.remove('open');
+});
+document.getElementById('pageModal').addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('open');
+});
+
+// ─ Template card click ─
+document.querySelectorAll('.tpl-card').forEach(card => {
+  card.addEventListener('click', function(){
+    document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('modalCreateBtn').disabled = false;
+  });
+});
+
+// ─ Create page ─
+document.getElementById('modalCreateBtn').addEventListener('click', function(){
+  const active = document.querySelector('.tpl-card.active');
+  if(!active) return;
+  const tpl = active.dataset.tpl;
+  spreadCount++;
+  const html = buildSpread(tpl, spreadCount);
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  // Insert before body end (after last spread)
+  const lastSpread = document.querySelectorAll('.spread-wrap');
+  const last = lastSpread[lastSpread.length - 1];
+  last.parentNode.insertBefore(container.firstElementChild, last.nextSibling);
+  // Rebind everything on new spread
+  const newSpread = document.querySelectorAll('.spread-wrap')[spreadCount - 1];
+  rebindSpread(newSpread);
+  // Close modal, scroll to new spread
+  document.getElementById('pageModal').classList.remove('open');
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('modalCreateBtn').disabled = true;
+  setTimeout(() => newSpread.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+});
+
+// ─ Rebind all interactivity on a new spread ─
+function rebindSpread(wrap){
+  // cards
+  wrap.querySelectorAll('[data-card]').forEach(card => {
+    card.addEventListener('click', function(e){
+      if(e.target.closest('[contenteditable]')) return;
+      if(e.target.closest('.img-zone') && !e.target.closest('[data-resize]')) return;
+      e.stopPropagation();
+      openPanel(this);
+    });
+  });
+  wrap.querySelectorAll('.teacher-card[data-card]').forEach(card => {
+    card.addEventListener('click', function(e){
+      if(e.target.closest('[contenteditable]')) return;
+      e.stopPropagation();
+      openPanel(this);
+    });
+  });
+  // image zones
+  wrap.querySelectorAll('.img-zone').forEach(z => {
+    if(!z.closest('.author-av')) z.onclick = () => pickImg(z);
+  });
+  // resize handles
+  wrap.querySelectorAll('[data-resize]').forEach(h => bindResize(h));
+  // contenteditable enter key
+  wrap.querySelectorAll('[contenteditable]').forEach(el => {
+    el.addEventListener('keydown', function(e){
+      if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); document.execCommand('insertLineBreak'); }
+    });
+  });
+}
+
+// ─ Spread template builder ─
+function buildSpread(tpl, num){
+  const IH = (h, cls='iz-default', label='Fotoğraf Yükle') =>
+    `<div class="img-zone ${cls}" style="height:${h}px" onclick="pickImg(this)">
+      <div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>${label}</span></div>
+      <div class="img-resize-handle" data-resize></div>
+    </div>`;
+
+  const AV = (cls='iz-warm') =>
+    `<div class="author-av"><div class="img-zone ${cls}" style="height:26px;width:26px;border-radius:50%" onclick="pickImg(this)"></div></div>`;
+
+  const FOOT = () =>
+    `<div class="footer-strip">
+      <div class="fs-block"><span class="e-tag white" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block"><span class="e-tag gold" contenteditable="true">Bölüm</span><div class="e-title sm white" contenteditable="true">Alt Başlık</div><div class="e-body white" contenteditable="true">Kısa metin</div></div>
+      <div class="fs-block" style="align-items:center;justify-content:center"><div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--gold)" contenteditable="true">EFL</div></div>
+    </div>`;
+
+  const HEAD = (cat, right=false) => right
+    ? `<div class="running-head no-select"><span class="section-tag" contenteditable="true">${cat}</span><span class="issue-info" contenteditable="true">SAYI · Tarih</span><span class="page-num" contenteditable="true"></span></div>`
+    : `<div class="running-head no-select"><span class="section-tag e-tag teal" contenteditable="true">${cat}</span><div class="mag-wordmark">EFL <span>DERGİ</span></div><span class="page-num" contenteditable="true">· Tarih</span></div>`;
+
+  const CARD2 = (bgL, izL, bgR, izR) => `
+    <div class="row halves" style="gap:12px">
+      <div class="card ${bgL}" data-card>
+        ${IH(160, izL)}
+        <div class="card-body">
+          <span class="e-tag white" contenteditable="true">Kategori</span>
+          <div class="e-title lg white" contenteditable="true">Başlık</div>
+          <div class="e-body white" contenteditable="true">Açıklama buraya yazılır.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:8px">${AV(izL)}<span class="e-name white" contenteditable="true">Ad Soyad</span></div>
+        </div>
+      </div>
+      <div class="card ${bgR}" data-card>
+        ${IH(160, izR)}
+        <div class="card-body">
+          <span class="e-tag white" contenteditable="true">Kategori</span>
+          <div class="e-title lg white" contenteditable="true">Başlık</div>
+          <div class="e-body white" contenteditable="true">Açıklama buraya yazılır.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:8px">${AV(izR)}<span class="e-name white" contenteditable="true">Ad Soyad</span></div>
+        </div>
+      </div>
+    </div>`;
+
+  let leftPage = '', rightPage = '', label = '';
+
+  if(tpl === 'haber'){
+    label = 'Haberler';
+    leftPage = `
+      ${HEAD('Haberler & Etkinlikler')}
+      <div class="headline-block card" data-card>
+        <div class="eyebrow" contenteditable="true">Kapak Hikâyesi</div>
+        <h1 contenteditable="true">Başlık<br><em>Buraya</em></h1>
+        <p class="hl-sub" contenteditable="true">Giriş paragrafı buraya gelecek.</p>
+      </div>
+      ${CARD2('bg-teal','iz-teal','bg-burg','iz-burg')}
+      <div class="h-card outlined card" style="min-height:110px" data-card>
+        <div class="h-img" style="flex:0 0 140px"><div class="img-zone iz-dark" style="min-height:110px;height:100%" onclick="pickImg(this)"><div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Fotoğraf</span></div></div></div>
+        <div class="h-body bg-white" style="padding:16px 18px">
+          <span class="e-tag gold" contenteditable="true">Öne Çıkan</span>
+          <div class="e-title lg dark" style="font-size:14px;margin-top:5px" contenteditable="true">Ana Haber Başlığı</div>
+          <div class="e-divider" style="margin:8px 0"></div>
+          <div class="e-body dark" contenteditable="true">Haber içeriği buraya yazılır.</div>
+          <div class="author-row" style="margin-top:10px">${AV('iz-warm')}<span class="e-name dark" contenteditable="true">Ad Soyad</span></div>
+        </div>
+      </div>
+      <div class="pullquote-bar card" data-card>
+        <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">Öne çıkan alıntı veya söz buraya gelecek.</div>
+        <div class="author-row" style="margin-top:10px"><div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div><span class="e-name white" contenteditable="true">Ad Soyad, Ünvan</span></div>
+      </div>`;
+
+    rightPage = `
+      ${HEAD('Projeler & Topluluk', true)}
+      <div class="card bg-charcoal" data-card style="flex:1">
+        ${IH(240, 'iz-dark', 'Ana Fotoğraf')}
+        <div class="card-body" style="padding:16px 18px;gap:8px">
+          <span class="e-tag white" contenteditable="true">Proje</span>
+          <div class="e-title lg white" style="font-size:17px" contenteditable="true">Proje Başlığı</div>
+          <div class="e-divider white"></div>
+          <div class="e-body white" style="font-size:11px;line-height:1.7" contenteditable="true">Proje açıklaması buraya gelecek.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:6px"><div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.15)" onclick="pickImg(this)"></div></div><span class="e-name white" contenteditable="true">Ad Soyad</span></div>
+        </div>
+      </div>
+      ${CARD2('bg-burg','iz-burg','bg-pale outlined','iz-teal')}
+      ${FOOT()}`;
+  }
+
+  else if(tpl === 'galeri'){
+    label = 'Galeri';
+    leftPage = `
+      ${HEAD('Galeri')}
+      <div class="card outlined" data-card>
+        ${IH(280, 'iz-mid', 'Ana Galeri Fotoğrafı')}
+        <div class="label-strip"><span class="ls-tag" contenteditable="true">Etkinlik Görseli</span><span class="ls-num" contenteditable="true">2025</span></div>
+        <div class="card-body" style="padding:14px 16px;gap:6px">
+          <span class="e-tag dark" contenteditable="true">Galeri</span>
+          <div class="e-title md dark" contenteditable="true">Galeri Başlığı</div>
+          <div class="e-body dark" style="font-size:11px;line-height:1.7" contenteditable="true">Fotoğraf hakkında açıklama buraya gelecek.</div>
+        </div>
+      </div>
+      <div class="row thirds" style="gap:8px">
+        <div class="card bg-teal" data-card>${IH(110,'iz-teal')}<div class="card-body sm"><div class="e-title sm white" contenteditable="true">Galeri</div><div class="e-body white" contenteditable="true">Kısa açıklama</div></div></div>
+        <div class="card bg-cream outlined" data-card>${IH(110,'iz-warm')}<div class="card-body sm"><div class="e-title sm dark" contenteditable="true">Galeri</div><div class="e-body dark" contenteditable="true">Kısa açıklama</div></div></div>
+        <div class="card bg-burg" data-card>${IH(110,'iz-burg')}<div class="card-body sm"><div class="e-title sm white" contenteditable="true">Galeri</div><div class="e-body white" contenteditable="true">Kısa açıklama</div></div></div>
+      </div>`;
+
+    rightPage = `
+      ${HEAD('Galeri Devamı', true)}
+      <div class="row halves" style="gap:10px;flex:1">
+        <div class="card bg-charcoal" data-card>${IH(200,'iz-dark','Fotoğraf')}<div class="card-body"><span class="e-tag white" contenteditable="true">Görsel</span><div class="e-title md white" contenteditable="true">Açıklama</div><div class="e-body white" contenteditable="true">Detay buraya.</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+          <div class="card bg-burg" data-card style="flex:1">${IH(130,'iz-burg','Fotoğraf')}<div class="card-body sm"><span class="e-tag white" contenteditable="true">Görsel</span><div class="e-title sm white" contenteditable="true">Açıklama</div><div class="e-body white" contenteditable="true">Detay.</div></div></div>
+          <div class="card bg-pale outlined" data-card style="flex:1">${IH(110,'iz-teal','Fotoğraf')}<div class="card-body sm"><span class="e-tag teal" contenteditable="true">Görsel</span><div class="e-title sm dark" contenteditable="true">Açıklama</div><div class="e-body dark" contenteditable="true">Detay.</div></div></div>
+        </div>
+      </div>
+      <div class="row halves" style="gap:10px">
+        <div class="card bg-gold" data-card>${IH(130,'iz-gold','Fotoğraf')}<div class="card-body sm"><div class="e-title sm dark" contenteditable="true">Galeri</div><div class="e-body dark" contenteditable="true">Açıklama</div></div></div>
+        <div class="card bg-white outlined" data-card>${IH(130,'iz-warm','Fotoğraf')}<div class="card-body sm"><div class="e-title sm dark" contenteditable="true">Galeri</div><div class="e-body dark" contenteditable="true">Açıklama</div></div></div>
+      </div>
+      ${FOOT()}`;
+  }
+
+  else if(tpl === 'roportaj'){
+    label = 'Röportaj';
+    leftPage = `
+      ${HEAD('Röportaj')}
+      <div class="big-q-block card" data-card>
+        <div class="big-q-eyebrow" contenteditable="true">ÖZEL RÖPORTAJ</div>
+        <div class="big-q-title" contenteditable="true">Röportaj Başlığı Buraya<br><em>Alt Başlık</em></div>
+        <div class="big-q-sub" contenteditable="true">Röportaj hakkında kısa giriş yazısı buraya gelecek.</div>
+      </div>
+      <div class="interview-intro">
+        <div class="interview-intro-title" contenteditable="true">Röportaj Hakkında</div>
+        <div class="interview-intro-text" contenteditable="true">Bu röportaj serisinde öğrencilerimiz ve öğretmenlerimizden ilginç cevaplar aldık. Katılım için herkese teşekkür ederiz.</div>
+      </div>
+      <div class="featured-teacher card" data-card>
+        <div class="ft-img-zone"><div class="img-zone iz-teal" style="height:70px;width:70px;border-radius:50%" onclick="pickImg(this)"><div class="iz-hint"><svg fill="white" viewBox="0 0 24 24" style="width:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div></div></div>
+        <div class="ft-body">
+          <div class="ft-quote-mark">&ldquo;</div>
+          <div class="e-title sm white" contenteditable="true">Öne çıkan alıntı veya söz buraya gelecek.</div>
+          <div class="e-body white" style="margin-top:6px;font-size:9px" contenteditable="true">Ad Soyad — Ünvan</div>
+        </div>
+      </div>
+      <div class="stat-pill-row">
+        <div class="stat-pill bg-pale outlined card" style="border:1.5px solid #d0e8e6" data-card><div class="sp-num" style="color:var(--teal-lt)" contenteditable="true">10</div><div class="sp-label" style="color:var(--teal)" contenteditable="true">Kişi</div><div class="e-body dark" style="font-size:8px;text-align:center" contenteditable="true">Röportaj yapıldı</div></div>
+        <div class="stat-pill bg-charcoal card" data-card><div class="sp-num" style="color:var(--burg-lt)" contenteditable="true">5</div><div class="sp-label" style="color:rgba(255,255,255,.7)" contenteditable="true">Konu</div><div class="e-body white" style="font-size:8px;text-align:center" contenteditable="true">İşlendi</div></div>
+        <div class="stat-pill bg-gold card" data-card><div class="sp-num" style="color:var(--charcoal)" contenteditable="true">1</div><div class="sp-label" style="color:var(--charcoal)" contenteditable="true">Sayı</div><div class="e-body dark" style="font-size:8px;text-align:center" contenteditable="true">Bu dergi</div></div>
+      </div>
+      ${FOOT()}`;
+
+    rightPage = `
+      ${HEAD('Röportaj Cevapları', true)}
+      <div class="teacher-grid" style="flex:1">
+        ${['c-teal','c-burg','c-gold','c-charcoal','c-teal','c-burg'].map((c,i) => `
+        <div class="teacher-card ${c}" data-card>
+          <div class="tc-subject" contenteditable="true">Branş / Ünvan</div>
+          <div class="tc-name" contenteditable="true">Ad Soyad</div>
+          <div class="tc-divider"></div>
+          <div class="tc-answer" contenteditable="true">Cevap buraya yazılır.</div>
+          <span class="prof-badge ${['teal','burg','gold','charcoal','pale','burg'][i]}" contenteditable="true">Meslek / Cevap</span>
+        </div>`).join('')}
+      </div>
+      <div class="pullquote-bar card" data-card>
+        <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">"Kapanış alıntısı veya teşekkür mesajı buraya gelecek."</div>
+        <div class="author-row" style="margin-top:8px"><div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase" contenteditable="true">EFL Dergi Ekibi</div></div>
+      </div>
+      ${FOOT()}`;
+  }
+
+  else if(tpl === 'ozgur'){
+    label = 'Boş Sayfa';
+    leftPage = `
+      ${HEAD('Yeni Bölüm')}
+      <div class="card bg-charcoal" data-card style="flex:1">
+        ${IH(220,'iz-dark','Ana Fotoğraf')}
+        <div class="card-body" style="padding:18px;gap:10px">
+          <span class="e-tag white" contenteditable="true">Kategori</span>
+          <div class="e-title lg white" style="font-size:18px" contenteditable="true">Ana Başlık</div>
+          <div class="e-divider white" style="margin:8px 0"></div>
+          <div class="e-body white" style="font-size:11px;line-height:1.75" contenteditable="true">Bu alana uzun bir metin yazabilirsiniz. Haber, röportaj veya etkinlik açıklaması buraya gelecek.</div>
+          <div class="author-row" style="margin-top:auto;padding-top:8px"><div class="author-av"><div class="img-zone" style="height:28px;width:28px;border-radius:50%;background:rgba(255,255,255,.15)" onclick="pickImg(this)"></div></div><span class="e-name white" contenteditable="true">Ad Soyad</span></div>
+        </div>
+      </div>
+      <div class="pullquote-bar card" data-card>
+        <div class="e-title md white" style="font-size:12px;line-height:1.6" contenteditable="true">Alıntı veya öne çıkan söz.</div>
+        <div class="author-row" style="margin-top:10px"><div class="author-av"><div class="img-zone" style="height:26px;width:26px;border-radius:50%;background:rgba(255,255,255,.2)" onclick="pickImg(this)"></div></div><span class="e-name white" contenteditable="true">Ad Soyad</span></div>
+      </div>`;
+
+    rightPage = `
+      ${HEAD('Devamı', true)}
+      ${CARD2('bg-teal','iz-teal','bg-burg','iz-burg')}
+      ${CARD2('bg-cream outlined','iz-warm','bg-gold','iz-gold')}
+      <div class="h-card outlined card" data-card style="min-height:100px">
+        <div class="h-img" style="flex:0 0 130px"><div class="img-zone iz-dark" style="min-height:100px;height:100%" onclick="pickImg(this)"><div class="iz-hint"><svg fill="white" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div></div></div>
+        <div class="h-body bg-white" style="padding:14px 16px"><span class="e-tag gold" contenteditable="true">Öne Çıkan</span><div class="e-title md dark" contenteditable="true">Başlık</div><div class="e-body dark" contenteditable="true">İçerik.</div></div>
+      </div>
+      ${FOOT()}`;
+  }
+
+  return `
+<div class="spread-wrap">
+<div class="spread">
+  <div class="page page-left">${leftPage}</div>
+  <div class="page page-right">${rightPage}</div>
+</div>
+<p class="spread-label">Çift Sayfa Yayılımı — ${num}/? &nbsp;·&nbsp; ${label}</p>
+</div>`;
+}
+
 </script>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -1026,7 +1321,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
     </div>
 
     <!-- Big question block -->
-    <div class="big-q-block card no-select" data-card="">
+    <div class="big-q-block card" data-card="">
       <div class="big-q-eyebrow" contenteditable="true">SORU SIRASI ÖĞRENCİLERDE</div>
       <div class="big-q-title" contenteditable="true">Erzincan Fen Lisesi Öğretmenlerine Sorduk:<br><em>Öğretmen Olmasaydınız Hangi Mesleği Yapmak İsterdiniz?</em></div>
       <div class="big-q-sub" contenteditable="true">Öğretmenlerimizi daha yakından tanımak ve onların hayallerini dergimiz aracılığıyla sizlerle paylaşmak istedik.</div>
@@ -1381,7 +1676,7 @@ document.getElementById('saveBtn').addEventListener('click', function(){
     </div>
 
     <!-- Closing pullquote -->
-    <div class="pullquote-bar card no-select" data-card="">
+    <div class="pullquote-bar card" data-card="">
       <div class="e-title md white" contenteditable="true">"Bizi kırmayıp bize cevap veren bütün öğretmenlerimize tekrardan teşekkür ederiz."</div>
       <div class="author-row" style="margin-top:8px">
         <div style="font-size:9px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase" contenteditable="true">EFL Dergi Ekibi</div>
@@ -1415,6 +1710,118 @@ document.querySelectorAll('.spread-wrap:nth-child(n+4) .img-zone').forEach(z=>{
   if(!z.closest('.author-av') && !z.onclick) z.onclick = ()=>pickImg(z);
 });
 </script>
+<!-- ═══════════ YENİ SAYFA MODAL ═══════════ -->
+<style>
+#pageModal{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+#pageModal.open{display:flex;}
+.modal-box{
+  background:var(--charcoal);border-radius:8px;
+  width:640px;max-width:95vw;max-height:85vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+.modal-hdr{
+  padding:18px 22px;background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.modal-hdr-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:var(--gold)}
+.modal-close-btn{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;padding:0 4px}
+.modal-close-btn:hover{color:#fff}
+.modal-body{padding:22px;overflow-y:auto;flex:1}
+.modal-subtitle{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+.tpl-card{
+  background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);
+  border-radius:6px;padding:18px 16px;cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;gap:8px;
+}
+.tpl-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25)}
+.tpl-card.active{background:rgba(46,168,154,.15);border-color:var(--teal-lt)}
+.tpl-icon{font-size:26px;margin-bottom:2px}
+.tpl-name{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#fff}
+.tpl-desc{font-size:9px;color:rgba(255,255,255,.5);line-height:1.6}
+.tpl-preview{display:flex;gap:4px;margin-top:6px}
+.tpl-preview span{height:6px;border-radius:2px;background:rgba(255,255,255,.15)}
+.modal-ftr{
+  padding:14px 22px;background:rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:flex-end;gap:10px;
+  flex-shrink:0;border-top:1px solid rgba(255,255,255,.08);
+}
+.modal-cancel{background:none;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);border-radius:3px;padding:7px 18px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-cancel:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.modal-create{background:var(--teal-lt);border:none;color:#fff;border-radius:3px;padding:8px 22px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .18s}
+.modal-create:hover:not(:disabled){background:var(--teal)}
+.modal-create:disabled{opacity:.35;cursor:not-allowed}
+</style>
+
+<div id="pageModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-hdr-title">YENİ SAYFA EKLE</span>
+      <button class="modal-close-btn" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-subtitle">Bir şablon seç</div>
+      <div class="tpl-grid">
+
+        <div class="tpl-card" data-tpl="haber">
+          <div class="tpl-icon">📰</div>
+          <div class="tpl-name">Haber Sayfası</div>
+          <div class="tpl-desc">Büyük başlık bloğu, 2 haber kartı, geniş yatay kart ve alıntı içerir.</div>
+          <div class="tpl-preview">
+            <span style="flex:3;background:#1A7B7B"></span>
+            <span style="flex:2;background:#7B1F2E"></span>
+            <span style="flex:1.5;background:#C8A84B"></span>
+          </div>
+        </div>
+
+        <div class="tpl-card" data-tpl="galeri">
+          <div class="tpl-icon">🖼</div>
+          <div class="tpl-name">Galeri Sayfası</div>
+          <div class="tpl-desc">Büyük ana fotoğraf + 3'lü küçük kart düzeni. Etkinlik fotoğrafları için ideal.</div>
+          <div class="tpl-preview">
+            <span style="flex:4;background:#4A4A4A"></span>
+            <span style="flex:1.5;background:#1A7B7B"></span>
+            <span style="flex:1.5;background:#7B1F2E"></span>
+          </div>
+        </div>
+
+        <div class="tpl-card" data-tpl="roportaj">
+          <div class="tpl-icon">🎤</div>
+          <div class="tpl-name">Röportaj Sayfası</div>
+          <div class="tpl-desc">Soru-cevap formatı. 6 röportaj kartı, giriş yazısı ve istatistik kutuları içerir.</div>
+          <div class="tpl-preview">
+            <span style="flex:2;background:#1A7B7B"></span>
+            <span style="flex:2;background:#7B1F2E"></span>
+            <span style="flex:2;background:#C8A84B"></span>
+          </div>
+        </div>
+
+        <div class="tpl-card" data-tpl="ozgur">
+          <div class="tpl-icon">✨</div>
+          <div class="tpl-name">Serbest Düzen</div>
+          <div class="tpl-desc">Sol tarafta büyük ana kart, sağda 4 kart + yatay kart. Her içerik için uygun.</div>
+          <div class="tpl-preview">
+            <span style="flex:3;background:#1E1E1E"></span>
+            <span style="flex:1.5;background:#2EA89A"></span>
+            <span style="flex:1.5;background:#EDE5D5"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="modal-cancel" id="modalCancelBtn" onclick="document.getElementById('pageModal').classList.remove('open');document.querySelectorAll('.tpl-card').forEach(c=&gt;c.classList.remove('active'));document.getElementById('modalCreateBtn').disabled=true;">İptal</button>
+      <button class="modal-create" id="modalCreateBtn" disabled="">Sayfayı Oluştur →</button>
+    </div>
+  </div>
+</div>
+
 
 
 </body></html>
